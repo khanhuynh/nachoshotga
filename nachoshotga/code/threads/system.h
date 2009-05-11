@@ -13,6 +13,7 @@
 #include "thread.h"
 #include "scheduler.h"
 #include "interrupt.h"
+#include "synchcons.h"
 #include "stats.h"
 #include "timer.h"
 
