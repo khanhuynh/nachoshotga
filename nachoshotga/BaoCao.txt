@@ -1,2 +1,10 @@
 HotGa: Them scexception.h va .cc (user2system, system2user, insreaseProgramCounter)
 --> Nho gmake all
+HotGa(22.05): Them bien gSynconsole trong system.h
+Them 2 lop ptable stable, sua include trong ptable (schandle thanh scexception)
+Them cac bien co debug cho utility.h
+Them bien processID cho lop thread va hieu chinh constructor cua lop nay
+Them 3 lop ptable, stable va pcb
+ptable co sua mot so doan code, 
+viet them pcb.cc
+Them 2 lop CFile va CFileTable ( chi co dinh nghia khung lop)

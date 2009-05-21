@@ -38,9 +38,19 @@ Thread::Thread(char* threadName)
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    processID = 0;
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
+}
+
+// Giai phong adrress space
+void Thread::FreeSpace()
+{
+  if(space != NULL)
+    {
+      delete space;  
+    }
 }
 
 //----------------------------------------------------------------------

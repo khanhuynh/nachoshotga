@@ -101,6 +101,9 @@ class Thread {
     void setStatus(ThreadStatus st) { status = st; }
     char* getName() { return (name); }
     void Print() { printf("%s, ", name); }
+           // Them vao processID 
+    int processID;
+    void FreeSpace();
 
   private:
     // some of the private data for this class is listed above

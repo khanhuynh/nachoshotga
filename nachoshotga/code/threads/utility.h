@@ -82,4 +82,14 @@ extern void DEBUG (char flag, char* format, ...);  	// Print debug message
     }
 
 
+const char dbgAll = '+';// turn on all debug messages
+const char dbgThread = 't';// threads
+const char dbgSynch = 's';// locks, semaphores, condition vars
+const char dbgInt = 'i'; // interrupt emulation
+const char dbgMach = 'm'; // machine emulation (USER_PROGRAM)
+const char dbgDisk = 'd'; // disk emulation (FILESYS)
+const char dbgFile = 'f'; // file system (FILESYS)
+const char dbgAddr = 'a'; // address spaces (USER_PROGRAM)
+const char dbgNet = 'n'; // network emulation (NETWORK)
+
 #endif // UTILITY_H

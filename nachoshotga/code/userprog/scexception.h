@@ -3,10 +3,10 @@
 
 #include "../userprog/syscall.h"
 #include "system.h"
-#define MaxFileLength 32
 
-char* User2System(int iVirtAddr,int iMaxFileLen);
+
+char* User2System(int iVirtAddr,int iLimit);
 int   System2User(int iVirtAddr,int iLen,char* buffer);
-
+void IncreaseProgramCounter(); 
 
 #endif

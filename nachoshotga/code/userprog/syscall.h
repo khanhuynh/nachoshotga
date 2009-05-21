@@ -84,7 +84,8 @@ typedef int OpenFileId;
  */
 
 #define ConsoleInput	0  
-#define ConsoleOutput	1  
+#define ConsoleOutput	1
+#define MaxFileLength 32
  
 /* Create a Nachos file, with "name" */
 void Create(char *name);
