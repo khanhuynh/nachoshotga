@@ -16,5 +16,7 @@ class CFile
   int   fClose(int fID);
  private:
   OpenFile *m_pFile;
+  int m_iType; // Loai khi mo file, tuy theo no loai gi ma thuc hien doc ghi cho phu hop
+	//Loai R thi ko cho ghi, loai W thi khong cho doc
 };
 #endif
