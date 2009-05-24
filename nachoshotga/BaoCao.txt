@@ -12,4 +12,4 @@ Tu Linh: Them cac phuong thuc constructor , destructor cua CFile
 	Them phuong thuc fOpen trong CFileTable
 	Viet doSC_Open, them con tro fTable trong thread.h va thread.cc
 Hot ga: Them phuong thuc get va set Type trong CFile
-	
+luc: da bo sung them  GetSize() va IsExist
