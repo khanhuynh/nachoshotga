@@ -9,5 +9,5 @@ char* User2System(int iVirtAddr,int iLimit);
 int   System2User(int iVirtAddr,int iLen,char* buffer);
 void IncreaseProgramCounter();
 int doSC_Open(); 
-
+int doSC_Read();
 #endif

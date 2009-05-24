@@ -135,4 +135,34 @@ int doSC_Open()
   return iFileID;
 }
 
+int doSC_Read()
+{
+	int virtAddr = machine->ReadRegister(4);
+
+  int size = machine->ReadRegister(5);
+  int id = machine->ReadRegister(6);
+char* name = User2System(virtAddr,size);
+  
+  if (size <= 0)
+    {
+      printf("\nError: unexpected buffer size: %d",size);
+      return -1;
+    }
+
+  if (id < 0 || id >= currentThread->fTable->GetSize())
+    {
+      printf("\n ReadError: Unexpected file id: %d",id);
+      return -1;
+    }
+  if (!currentThread->fTable->IsExist(id)){
+    printf("\n ReadError: reading file id %d is not opened",id);
+    return -1;
+  }
+
+  int rs = currentThread->fTable->fRead(virtAddr,size,id);
+  
+  machine->WriteRegister(2,rs);
+
+  return rs;
+}
 

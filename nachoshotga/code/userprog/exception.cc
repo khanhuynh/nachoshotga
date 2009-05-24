@@ -99,9 +99,13 @@ ExceptionHandler(ExceptionType which)
 	  case SyscallException:
 		  switch(type)
 		  {
-		  case SC_Halt:
+		 case SC_Halt:
 			  DEBUG('a', "Shutdown, initiated by user program.\n");
    			interrupt->Halt();
+			//break;
+		 case SC_Read:
+			doSC_Read();
+			break;
 		  default:
 			  printf("Unexpected user mode exception %d %d\n", which, type);
 			  ASSERT(FALSE);

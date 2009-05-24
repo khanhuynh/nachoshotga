@@ -65,3 +65,23 @@ int CFileTable::FindFreeSlot()
   return (m_bm->Find());
 }
 
+int CFileTable::GetSize()
+{
+  return (m_iSize);
+}
+
+bool   CFileTable::IsExist(int id)
+{
+  return m_bm->Test(id);
+}
+
+int   CFileTable::fRead(int iVirAddr, int iSize, int fID)
+{
+	int rs = 0;
+  int virtAddr = iVirAddr;
+  int size = iSize;
+  int id = fID;
+ 
+  rs = m_pFile[id]->fRead(virtAddr,size);
+  return rs;
+}
