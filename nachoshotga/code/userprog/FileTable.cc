@@ -77,11 +77,11 @@ bool   CFileTable::IsExist(int id)
 
 int   CFileTable::fRead(int iVirAddr, int iSize, int fID)
 {
-	int rs = 0;
-  int virtAddr = iVirAddr;
-  int size = iSize;
-  int id = fID;
+	int iRs = 0;
+  	int m_iVirtAddr = iVirAddr;
+  	int m_iSize = iSize;
+  	int m_id = fID;
  
-  rs = m_pFile[id]->fRead(virtAddr,size);
-  return rs;
+  	iRs = m_pFile[m_id]->fRead(m_iVirtAddr,m_iSize);
+  	return iRs;
 }

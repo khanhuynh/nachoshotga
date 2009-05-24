@@ -25,37 +25,33 @@ void CFile::PutType(int iType)
 }
 int   CFile::fRead(int iVirAddr, int iSize)
 {
-	int addr = iVirAddr;
-  	int si = iSize;
-  	char *buf = new char[si + 1];
+	int iRs = 0;
+	int m_iVirAddr = iVirAddr;
+	int m_iSize = iSize;
 
-  	ASSERT(buf != NULL);
+	char *cBuf = new char[m_iSize +1];
 
- 	 int rs = gSynchConsole->Read(buf,si);
-  
- 	
- 	 if (rs == si && buf[rs] != 10)
+	ASSERT(cBuf != NULL);
+
+	int iBytesRead = m_pFile->Read(cBuf,m_iSize);
+
+	if (iBytesRead < 0)
 	{
-   	 	char temp[11];
-  	 	 int len =  0;
-  	  	do
-		{
-   		   len = gSynchConsole->Read(temp,10);
-    		}  while (len == 10 && temp[len-1] != 10);
+		printf("\n Doc bi loi");
+    
+    		delete cBuf;
+    		return -1;
   	}
+  	else if (iBytesRead == 0)
+    	{
+     
+     	 delete cBuf;
+     	 return 0;
+    	}
 
-  	if (rs < 0)
-	{
-  	  printf("fRead Error- SynchConsole read fail!..");
-   	 delete buf;
-   	 return -1;
-  	}
-
-  	int rsl = System2User(addr,rs,buf);
- 	 if (rsl < 0)
-    	  printf("\n Read:Error write to user space");
+  	iRs = System2User(m_iVirAddr,iBytesRead,cBuf);
 
   
- 	 delete buf;
- 	 return rsl; 
-}
+  	delete cBuf;
+  	return iRs;
+}	
