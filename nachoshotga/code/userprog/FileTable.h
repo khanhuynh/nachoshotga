@@ -4,12 +4,11 @@
 
 #include "bitmap.h"
 #include "File.h"
-#include "scexception.h"
 
 
-#define  MAX  10   // So file quan ly
-#define  W 0
-#define  R 1
+
+#define MAX 10   // So file quan ly
+
 
 
 class CFileTable
@@ -18,9 +17,9 @@ class CFileTable
   CFileTable(int size);
   ~CFileTable();
 
-  int   fWrite(char* FileName, int iSize, int fID);
-  int   fRead(char* FileName, int iSize, int fID);
-  int   fOpen(char* FileName, int iType, int fID, OpenFile *f);
+  int   fWrite(int iVirAddr, int iSize, int fID);
+  int   fRead(int iVirAddr, int iSize, int fID);
+  int   fOpen(int iType, int fID, OpenFile *f);
   int   fClose(int fID);
   int   GetSize();
   int   FindFreeSlot();

@@ -1,5 +1,5 @@
-// Syscall handle file: process all syscall exception except SC_Halt
-// Begin DU~NG TRUNG TRAN
+// Syscall exception file: process all syscall exception except SC_Halt
+
 
 #include "scexception.h"
 
@@ -77,9 +77,62 @@ void IncreaseProgramCounter()
   machine->WriteRegister(PrevPCReg, iPc);
   iPc = machine->ReadRegister(NextPCReg);
   machine->WriteRegister(PCReg, iPc);
-  iPc+ = 4;
+  iPc += 4;
   machine->WriteRegister(NextPCReg, iPc);
 }
 
+/*
+Input:  - Ten file
+        - Loai file
+          0: file doc ghi
+          1: file chi doc
+Output: - fail: -1
+          OK: OpenFileID
+*/
+
+int doSC_Open()
+{
+  int iVirtAddr = machine->ReadRegister(4);
+  int iType = machine->ReadRegister(5);
+
+  if(iType < 0 || iType > 1)
+  {
+    printf("\nUnknow file type %d", iType);
+    return -1;
+  }
+
+  int fID = currentThread->fTable->FindFreeSlot();
+
+  if(fID < 0)
+  {
+    printf("No free slot\n");
+    return -1;
+  }
+
+  char *FileName = User2System(iVirtAddr, MaxFileLength + 1);
+
+  if((FileName == NULL) || (strlen(FileName) == 0) || (strlen(FileName) >= MaxFileLength + 1))
+  {
+    printf("\nNot enough memory of too many characters in filename");
+    machine->WriteRegister(2, -1);
+    delete FileName;
+    return -1;
+  }
+
+  OpenFile *f = fileSystem->Open(FileName);
+
+  if(f == NULL)
+  {
+    printf("Cannot open file %s", FileName);
+    machine->WriteRegister(2, -1);
+    delete FileName;
+    return -1;
+  }
+
+  int iFileID = currentThread->fTable->fOpen(iType, fID, f);
+  machine->WriteRegister(2, iFileID);
+
+  return iFileID;
+}
 
 

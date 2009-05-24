@@ -1,4 +1,4 @@
-// DUN~G TRUNG TRAN
+
 //stable.cc
 
 #include "stable.h"

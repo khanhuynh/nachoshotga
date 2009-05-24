@@ -39,6 +39,7 @@ Thread::Thread(char* threadName)
     stack = NULL;
     status = JUST_CREATED;
     processID = 0;
+    fTable = new CFileTable(MAX);
 #ifdef USER_PROGRAM
     space = NULL;
 #endif
@@ -68,7 +69,10 @@ void Thread::FreeSpace()
 Thread::~Thread()
 {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
-
+    if(fTable != NULL)
+    {
+      delete fTable;
+    }
     ASSERT(this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray((char *) stack, StackSize * sizeof(int));
