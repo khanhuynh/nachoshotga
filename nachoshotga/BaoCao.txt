@@ -8,3 +8,8 @@ Them 3 lop ptable, stable va pcb
 ptable co sua mot so doan code, 
 viet them pcb.cc
 Them 2 lop CFile va CFileTable ( chi co dinh nghia khung lop)
+Tu Linh: Them cac phuong thuc constructor , destructor cua CFile
+	Them phuong thuc fOpen trong CFileTable
+	Viet doSC_Open, them con tro fTable trong thread.h va thread.cc
+Hot ga: Them phuong thuc get va set Type trong CFile
+	
