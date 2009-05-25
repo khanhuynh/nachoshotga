@@ -16,6 +16,8 @@
 #include "synchcons.h"
 #include "stats.h"
 #include "timer.h"
+#include "ptable.h"
+
 
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
@@ -32,6 +34,9 @@ extern Timer *timer;				// the hardware alarm clock
 
 // Them cac bien su dung
 extern SynchConsole *gSynchConsole;
+extern PTable *pTab;
+extern BitMap* gPhysPageBitMap;
+extern Semaphore* addrMutex;
 
 #ifdef USER_PROGRAM
 #include "machine.h"

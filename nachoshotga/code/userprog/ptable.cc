@@ -99,7 +99,7 @@ int PTable::ExecUpdate(char* filename)
   pcb[pid]->parentID = currentThread->processID;
   //debug
   //printf("\nPtable: process ID: %d",pid);
-  pcb[pid]->SetFileName(filename);  // gan ten cua tien trinh
+
   int rs = pcb[pid]->Exec(filename,pid);
   
   //  delete filename;
@@ -227,4 +227,10 @@ void PTable::Remove(int pid){
   //printf("\nR3");
   pcb[pid] = NULL;
   bmsem->V();
+}
+
+char* PTable::GetName(int pID)
+{
+	if(bm->Test(pID))
+		return pcb[pID]->GetThreadName();
 }

@@ -12,4 +12,11 @@ Tu Linh: Them cac phuong thuc constructor , destructor cua CFile
 	Them phuong thuc fOpen trong CFileTable
 	Viet doSC_Open, them con tro fTable trong thread.h va thread.cc
 Hot ga: Them phuong thuc get va set Type trong CFile
-luc: da bo sung them  GetSize() va IsExist
+luc: da bo sung them  GetSize() va IsExist()
+Hotga : Them con tro pTab thuoc lop PTable
+	them ham ProccessFunc trong PCB.cc de dung cho phuong thuc exec cua lop nay
+	Chinh sua constructor Addrspace(Openfile*) --> da chuong roi day !
+	Them 1 constructor Addrspace(char *filename) tuong tu nhu tren 
+ * Luu y: dung doi chieu AddrSpace cua tui voi code mau, vi tui ko co viet theo no
+	 No viet sai !!! Rang hieu phan nay nha ba con. Co chu thich day du rui.
+	

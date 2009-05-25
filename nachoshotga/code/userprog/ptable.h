@@ -23,6 +23,7 @@ class PTable {
   bool IsExist(int pid);
   int GetMax();
   void Remove(int pid);
+  char* GetName(int pID);
 };
 
 #endif

@@ -4,9 +4,6 @@
 #include "thread.h"
 #include "synch.h"
 #include "utility.h"
-#include "system.h"
-#include "thread.h"
-#include "addrspace.h"
 #include "../userprog/syscall.h"
 
 class PCB{
@@ -18,7 +15,6 @@ class PCB{
   Thread    *thread;
   int        pid;
   int        numwait;
-  char FileName[MaxFileLength];
 
  public: 
   int        parentID;
@@ -36,7 +32,6 @@ class PCB{
   void DecNumWait();
   void SetExitCode(int ec){exitcode = ec;}
   int  GetExitCode(){return exitcode;}
-  void SetFileName(char* fn);
-  char* GetFileName();
+  char* GetThreadName();
 };
 #endif

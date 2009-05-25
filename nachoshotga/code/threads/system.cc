@@ -21,6 +21,9 @@ Timer *timer;				// the hardware timer device,
 
 
 SynchConsole *gSynchConsole;
+PTable* pTab;
+BitMap* gPhysPageBitMap;
+Semaphore* addrMutex;
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -154,6 +157,9 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine(debugUserProg);	// this must come first
     gSynchConsole = new SynchConsole();
+    pTab = new PTable(10);
+    gPhysPageBitMap = new BitMap(256);
+    addrMutex = new Semaphore("AddrMutex",1);
 #endif
 
 #ifdef FILESYS
@@ -184,6 +190,9 @@ Cleanup()
 #ifdef USER_PROGRAM
     delete machine;
     delete gSynchConsole;
+    delete pTab;
+    delete gPhysPageBitMap;
+    delete addrMutex;
 #endif
 
 #ifdef FILESYS_NEEDED

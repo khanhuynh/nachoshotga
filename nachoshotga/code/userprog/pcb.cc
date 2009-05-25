@@ -3,11 +3,27 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "pcb.h"
+#include "system.h"
 
 
-void ProcessFunc(int pid)
+void ProcessFunc(int pID)
 {
+  char *filename= pTab->GetName(pID);
+	AddrSpace *space= new AddrSpace(filename);
+	if(space == NULL)
+	{
+		printf("\nLoi: Khong du bo nho de cap phat cho tien trinh !!!\n");
+		return;
+	}
+	currentThread->space = space;
 
+	space->InitRegisters();		// set the initial register values
+	space->RestoreState();		// load page table register
+
+	machine->Run();			// jump to the user progam
+	ASSERT(FALSE);			// machine->Run never returns;
+						// the address space exits
+						// by doing the syscall "exit"
 }
 
 //constuctor
@@ -25,7 +41,15 @@ PCB::PCB()
 
 PCB::PCB(int id)
 {
-	this->parentID = currentThread->processID;
+  if(id != 0)
+  {
+	  parentID = currentThread->processID;
+  }
+  else
+  {
+     parentID = 0;
+  }
+   
 	this->pid = id;
 	this->numwait = 0;
 	this->exitcode = 0;
@@ -58,8 +82,6 @@ PCB::~PCB()
 	  // (void) interrupt->SetLevel(oldLevel);
 }
 
-//////////////////////////////////////////////////////////////////////////
-
 
 int PCB::GetNumWait()
 {
@@ -68,19 +90,19 @@ int PCB::GetNumWait()
 
 
 
-//////////////////////////////////////////////////////////////////////////
 
 void PCB::JoinWait()
 {
+  IncNumWait();
 	joinsem->P();
 }
 
 void PCB::JoinRelease()
 {
 	joinsem->V();
+  DecNumWait();
 }
 
-//////////////////////////////////////////////////////////////////////////
 
 void PCB::ExitWait()
 {
@@ -92,7 +114,6 @@ void PCB::ExitRelease()
 	exitsem->V();
 }
 
-//////////////////////////////////////////////////////////////////////////
 
 void PCB::IncNumWait()
 {
@@ -109,19 +130,12 @@ void PCB::DecNumWait()
 	mutex->V();
 }
 
-//////////////////////////////////////////////////////////////////////////
 
-void PCB::SetFileName(char* fn)
+char* PCB::GetThreadName()
 {
-	strcpy(FileName,fn);
+	return thread->getName();
 }
 
-char* PCB::GetFileName()
-{
-	return FileName;
-}
-
-//////////////////////////////////////////////////////////////////////////
 
 //nap chuong trinh co ten luu trong bien file name va ProcessID la id
 int PCB::Exec(char* filename,int id)
