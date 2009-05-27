@@ -29,7 +29,7 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
-
+#define SC_Semaphore	11
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos

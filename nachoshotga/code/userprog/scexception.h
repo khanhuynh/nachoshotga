@@ -10,4 +10,6 @@ int   System2User(int iVirtAddr,int iLen,char* buffer);
 void IncreaseProgramCounter();
 int doSC_Open(); 
 int doSC_Read();
+int doSC_Create();
+void doSC_Semaphore();
 #endif

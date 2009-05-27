@@ -166,3 +166,77 @@ char* name = User2System(virtAddr,size);
   return rs;
 }
 
+int doSC_Create()
+{
+	int virtAddr;
+  	char* filename;
+
+    
+  DEBUG(dbgFile,"\n SC_Create call ...");
+  DEBUG(dbgFile,"\n Doc tap tin tu dia chi ao");
+  
+  // check for exception
+  virtAddr = machine->ReadRegister(4);
+  DEBUG (dbgFile,"\n Dang doc file.");
+  filename = User2System(virtAddr,MaxFileLength+1);
+  if (filename == NULL)
+    {
+      printf("\n Not enough memory in system");
+      DEBUG(dbgFile,"\n Not enough memory in system");
+      machine->WriteRegister(2,-1);
+      delete filename;
+      return -1;
+    }
+  
+  if (strlen(filename) == 0 || (strlen(filename) >= MaxFileLength+1))
+    {
+      printf("\n Qua nhieu ki tu trong ten tap tin: %s",filename);
+      DEBUG(dbgFile,"\n Qua nhieu ki tu trong ten tap tin");
+      machine->WriteRegister(2,-1);
+      delete filename;
+      return -1;
+    }
+
+  //Hoan thanh viec doc ten tap tin
+  
+  DEBUG(dbgFile,"\n Doc ten tap xong!.");
+  
+
+  // Tao tap tin voi cai size = 0;
+
+  if (!fileSystem->Create(filename,0))
+    {
+      printf("\n Loi tao file: '%s'",filename);
+      delete filename;
+      machine->WriteRegister(2,-1);
+      delete filename;
+      return -1;
+    }
+ 
+
+  machine->WriteRegister(2,0);
+
+  delete filename;
+  return 0;
+}
+
+void doSC_Semaphore()
+{
+	int iAddr = machine->ReadRegister(4);
+	int iSemval = machine->ReadRegister(5);
+	char *name = User2System(iAddr,32);
+	if(name == NULL)
+	{
+		printf("\nSC_Semaphore :: name = NULL");
+		machine->WriteRegister(2,-1);
+		return;
+	}
+	int kq = sem->create(name,iSemval);
+	if(kq < 0)
+	{
+		printf("\nSC_Semaphore :: khong the tao semaphore : %s",name);
+		machine->WriteRegister(2,-1);
+		return;
+	}
+	machine->WriteRegister(2,0);
+}

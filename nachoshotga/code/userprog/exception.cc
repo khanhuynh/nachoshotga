@@ -106,6 +106,11 @@ ExceptionHandler(ExceptionType which)
 		 case SC_Read:
 			doSC_Read();
 			break;
+		 case SC_Semaphore:
+			doSC_Semaphore();
+			break;
+		case SC_Create:
+			doSC_Create();
 		  default:
 			  printf("Unexpected user mode exception %d %d\n", which, type);
 			  ASSERT(FALSE);

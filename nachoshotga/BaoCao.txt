@@ -19,4 +19,4 @@ Hotga : Them con tro pTab thuoc lop PTable
 	Them 1 constructor Addrspace(char *filename) tuong tu nhu tren 
  * Luu y: dung doi chieu AddrSpace cua tui voi code mau, vi tui ko co viet theo no
 	 No viet sai !!! Rang hieu phan nay nha ba con. Co chu thich day du rui.
-	
+luc: bo sung them mot hai sc_

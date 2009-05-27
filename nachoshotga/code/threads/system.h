@@ -17,7 +17,7 @@
 #include "stats.h"
 #include "timer.h"
 #include "ptable.h"
-
+#include "stable.h"
 
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
@@ -37,7 +37,7 @@ extern SynchConsole *gSynchConsole;
 extern PTable *pTab;
 extern BitMap* gPhysPageBitMap;
 extern Semaphore* addrMutex;
-
+extern STable* sem;
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

@@ -24,6 +24,7 @@ SynchConsole *gSynchConsole;
 PTable* pTab;
 BitMap* gPhysPageBitMap;
 Semaphore* addrMutex;
+STable* sem;
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;

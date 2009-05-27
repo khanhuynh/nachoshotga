@@ -130,6 +130,13 @@ Yield:
 	j	$31
 	.end Yield
 
+	.globl Semaphore
+	.ent	Semaphore
+Semaphore:
+	addiu $2,$0,SC_Semaphore
+	syscall
+	j	$31
+	.end Semaphore
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
