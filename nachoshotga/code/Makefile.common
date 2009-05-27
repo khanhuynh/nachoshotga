@@ -83,7 +83,10 @@ USERPROG_H = ../userprog/addrspace.h\
   ../userprog/pcb.h\
   ../userprog/ptable.h\
   ../userprog/stable.h\
-  ../userprog/File.h\
+  ../userprog/rofile.h\
+  ../userprog/rwfile.h\
+  ../userprog/cin.h\
+  ../userprog/cout.h\
   ../userprog/FileTable.h
 
 
@@ -100,12 +103,16 @@ USERPROG_C = ../userprog/addrspace.cc\
   ../userprog/pcb.cc\
   ../userprog/ptable.cc\
   ../userprog/stable.cc\
-  ../userprog/File.cc\
+  ../userprog/cin.cc\
+  ../userprog/cout.cc\
+  ../userprog/rofile.cc\
+  ../userprog/rwfile.cc\
   ../userprog/FileTable.cc
 
     
 USERPROG_O = addrspace.o bitmap.o exception.o progtest.o console.o machine.o \
-	mipssim.o translate.o synchcons.o scexception.o ptable.o stable.o pcb.o File.o FileTable.o
+	mipssim.o translate.o synchcons.o scexception.o ptable.o stable.o pcb.o \
+  cin.o cout.o rwfile.o rofile.o FileTable.o
 
 VM_H = 
 VM_C = 

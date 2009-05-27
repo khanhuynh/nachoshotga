@@ -99,22 +99,65 @@ ExceptionHandler(ExceptionType which)
 	  case SyscallException:
 		  switch(type)
 		  {
-		 case SC_Halt:
+		  case SC_Halt:
 			  DEBUG('a', "Shutdown, initiated by user program.\n");
    			interrupt->Halt();
-			//break;
-		 case SC_Read:
-			doSC_Read();
-			break;
-		 case SC_Semaphore:
-			doSC_Semaphore();
-			break;
-		case SC_Create:
-			doSC_Create();
+      case SC_Create:
+      {
+        doSC_Create();
+        break;
+      }
+      case SC_Open:
+      {
+        doSC_Open();
+        break;
+      }   
+      case SC_Read:
+      {
+        doSC_Read();
+        break;
+      }
+      case SC_Write:
+      {
+        doSC_Write();
+        break;
+      }
+      case SC_Close:
+      {
+        doSC_Close();
+        break;
+      }
+      case SC_CreateSemaphore:
+      {
+			  doSC_CreateSemaphore();
+			  break;
+      }
+      case SC_Exec:
+      {
+        doSC_Exec();
+        break;
+      }
+      case SC_Exit:
+      {
+        doSC_Exit();
+        break;
+      }
+      case SC_Wait:
+      {
+        doSC_Wait();
+        break;
+      }
+      case SC_Signal:
+      {
+        doSC_Signal();
+        break;
+      } 
 		  default:
 			  printf("Unexpected user mode exception %d %d\n", which, type);
 			  ASSERT(FALSE);
+        interrupt->Halt();
 		  }
+      IncreaseProgramCounter();
 		break;
 	}
 }

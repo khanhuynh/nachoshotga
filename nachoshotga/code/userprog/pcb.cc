@@ -93,14 +93,12 @@ int PCB::GetNumWait()
 
 void PCB::JoinWait()
 {
-  IncNumWait();
 	joinsem->P();
 }
 
 void PCB::JoinRelease()
 {
 	joinsem->V();
-  DecNumWait();
 }
 
 

@@ -19,6 +19,7 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
+
 #ifdef HOST_SPARC
 #include <strings.h>
 #endif
@@ -33,7 +34,6 @@
 static void 
 SwapHeader (NoffHeader *noffH)
 {
- // Chuyen tu Little Endian sang Big Endian ( vi MIPS la Big Endian)
 	noffH->noffMagic = WordToHost(noffH->noffMagic);
 	noffH->code.size = WordToHost(noffH->code.size);
 	noffH->code.virtualAddr = WordToHost(noffH->code.virtualAddr);
@@ -45,6 +45,8 @@ SwapHeader (NoffHeader *noffH)
 	noffH->uninitData.virtualAddr = WordToHost(noffH->uninitData.virtualAddr);
 	noffH->uninitData.inFileAddr = WordToHost(noffH->uninitData.inFileAddr);
 }
+
+//Semaphore* AddrSpace::addrLock = new Semaphore("addrLock",1);
 
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
@@ -63,48 +65,48 @@ SwapHeader (NoffHeader *noffH)
 
 AddrSpace::AddrSpace(OpenFile *executable)
 {
-    NoffHeader noffH;
-    unsigned int i, j, size;
-    unsigned int iNumCodePage, iNumDataPage; // So trang cua phan code va so trang cua phan data
-    unsigned int iLastCodePageSize, iFirstDataPageSize, iRemainDataSize, iLastDataPageSize;
-    // Doc Header
+  NoffHeader noffH;
+    unsigned int i, size;
+    if (executable == NULL)//neu ko mo duoc file thi return
+    {
+	printf("Unable to open file %s\n");
+	return ;
+    }
+
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    // Kiem tra xem du lieu co duoc luu theo Little Endian ko
     if ((noffH.noffMagic != NOFFMAGIC) && 
-		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
+	(WordToHost(noffH.noffMagic) == NOFFMAGIC))
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
+  
+	
 
-    
 // how big is address space?
     size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
 			+ UserStackSize;	// we need to increase the size
 						// to leave room for the stack
-    numPages = divRoundUp(size, PageSize); // 1 pagesize = 2*SectorSize
-    size = numPages * PageSize;            // Kich thuoc ma ct se can
+    numPages = divRoundUp(size, PageSize);
+    size = numPages * PageSize;
+    addrMutex->P(); // truy xuat doc quyen mien gang gPhysPageBitMap
+    if(numPages > gPhysPageBitMap->NumClear())
+    {
+	printf("\nAddrSpace::Load : not enough memory for new process");
+	numPages = 0;
+	delete executable;
+	addrMutex->V();
+    }
 
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
-            
-    addrMutex->P();     // Truy xuat doc quyen gPhysPageBitMAp
-    // Kiem tra xem voi so trang ct can, co con du bo nho vat ly trong khong
-    if (numPages > gPhysPageBitMap->NumClear())
-	  {
-		  printf("\nAddrSpace:Load: not enough memory for new process..!");
-		  numPages = 0;
-		  delete executable;
-		  addrMutex->V();
-      return;
-	  }        
     DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
 // first, set up the translation 
-  /*  pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++) {
+    pageTable = new TranslationEntry[numPages];
+
+    for (i = 0; i < numPages; i++)
+    {
 	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
+	
+	pageTable[i].physicalPage = gPhysPageBitMap->Find(); // Tim trang con trong
+
 	pageTable[i].valid = TRUE;
 	pageTable[i].use = FALSE;
 	pageTable[i].dirty = FALSE;
@@ -112,219 +114,100 @@ AddrSpace::AddrSpace(OpenFile *executable)
 					// a separate page, we could set its 
 					// pages to be read-only
     }
-    
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
-    bzero(machine->mainMemory, size);  */
-    // first, set up the translation
-	pageTable = new TranslationEntry[numPages];
-	for (i = 0; i < numPages; i++)
-	{
-		pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
-		pageTable[i].physicalPage = gPhysPageBitMap->Find();  // Tim trang con trong --> day la phan thay doi
-		pageTable[i].valid = TRUE;
-		pageTable[i].use = FALSE;
-		pageTable[i].dirty = FALSE;
-		pageTable[i].readOnly = FALSE; // if the code segment was entirely on a separate page, we could set its pages to be read-only
 
-		// Xoa trang da chon duoc
-		bzero(&(machine->mainMemory[pageTable[i].physicalPage*PageSize]), PageSize);
-		printf("Trang vat ly %d \n",pageTable[i].physicalPage);
-	}
-  addrMutex->V();
-/*// then, copy in the code and data segments into memory
-    if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n", 
-			noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-			noffH.code.size, noffH.code.inFileAddr);
+    addrMutex->V();
+
+
+// then, copy in the code and data segments into memory
+    if (noffH.code.size > 0)
+    {
+	      for(i = 0; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize,noffH.code.inFileAddr + (i*PageSize));
     }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n", 
-			noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-			noffH.initData.size, noffH.initData.inFileAddr);
-    }
-    */
-    //Tinh so trang cua phan code
-	iNumCodePage = divRoundUp(noffH.code.size, PageSize);
 
-    // Tinh kich thuoc trang cuoi cua phan code
-	iLastCodePageSize = noffH.code.size - (iNumCodePage-1)*PageSize;
-    // Tinh phan con lai cua phan data de phong truong hop trang cuoi phan code khong su dung het page
-	iRemainDataSize = noffH.initData.size - (PageSize - iLastCodePageSize);
-  // Tinh kich thuoc trang dau phan data de co the load vua du vao phan du cua trang code cuoi
-	if (iRemainDataSize < 0)
-	{
-		iNumDataPage = 0;
-		iFirstDataPageSize = noffH.initData.size;
-	}
-	else
-	{
-		iNumDataPage = divRoundUp(iRemainDataSize, PageSize);
-		iLastDataPageSize = iRemainDataSize - (iNumDataPage-1)*PageSize;
-		iFirstDataPageSize = PageSize - iLastCodePageSize;
-	}
-// Copy phan code vao memory
-	for (i = 0; i < iNumCodePage; i++)
-	{
-		executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + pageTable[i].physicalPage*PageSize, i < (iNumCodePage-1) ? PageSize :iLastCodePageSize, noffH.code.inFileAddr + i*PageSize);
-	}
+//nap phan data
+    if (noffH.initData.size > 0)
+    {
+	      for(i = 0 ; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize, noffH.initData.inFileAddr+(i*PageSize));
+    }	
 
-  // Xet coi phan code o trang cuoi co day ko, neu khong load trang dau cua phan data vao lap
-  // day phan nay
-	if (iLastCodePageSize < PageSize)
-	{
-		// Copy phan data vao phan con lai cua trang cuoi phan code
-		if (iFirstDataPageSize > 0)
-			executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr])+(pageTable[i-1].physicalPage*PageSize + iLastCodePageSize), iFirstDataPageSize, noffH.initData.inFileAddr);
-	}
-
-// Copy phan con lai cua data vao cac trang sau
-	for (j = 0; j < iNumDataPage; j++)
-	{
-		// if(noffH.initData.size > 0)
-		executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + pageTable[i].physicalPage*PageSize,j < (iNumDataPage-1) ? PageSize : iLastDataPageSize,noffH.initData.inFileAddr + j*PageSize + iFirstDataPageSize);
-		i++;
-	}
-	delete executable;
-
+//   delete executable;
 }
 
-AddrSpace::AddrSpace(char *filename)
-{
-  NoffHeader noffH;
-  unsigned int i, j, size;
-  unsigned int iNumCodePage, iNumDataPage; // So trang cua phan code va so trang cua phan data
-  unsigned int iLastCodePageSize, iFirstDataPageSize, iRemainDataSize, iLastDataPageSize;
+////////////////////////////////////////////////////////////////
 
-	OpenFile* executable = fileSystem->Open(filename);
-	if (executable == NULL)
-	{
-		printf("\nAddrspace::Loi mo file: %s",filename);
-		//DEBUG(dbgFile,"\n Error opening file.");
-		return;
-	}
-    // Doc Header
+
+AddrSpace::AddrSpace(char* filename)
+{
+
+    NoffHeader noffH;
+    unsigned int i, size;
+    OpenFile* executable = fileSystem->Open(filename);
+    if (executable == NULL)//neu ko mo duoc file thi return
+    {
+	printf("Unable to open file %s\n", filename);
+	return ;
+    }
+
     executable->ReadAt((char *)&noffH, sizeof(noffH), 0);
-    // Kiem tra xem du lieu co duoc luu theo Little Endian ko
-    if ((noffH.noffMagic != NOFFMAGIC) &&
-		(WordToHost(noffH.noffMagic) == NOFFMAGIC))
+    if ((noffH.noffMagic != NOFFMAGIC) && 
+	(WordToHost(noffH.noffMagic) == NOFFMAGIC))
     	SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFFMAGIC);
+  
+	
 
 // how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size 
 			+ UserStackSize;	// we need to increase the size
 						// to leave room for the stack
-    numPages = divRoundUp(size, PageSize); // 1 pagesize = 2*SectorSize
-    size = numPages * PageSize;            // Kich thuoc ma ct se can
+    numPages = divRoundUp(size, PageSize);
+    size = numPages * PageSize;
+    addrMutex->P();               // truy xuat doc quyen mien gang gPhysPageBitMap
+    if(numPages > gPhysPageBitMap->NumClear())
+    {
+	printf("\nAddrSpace::Load : not enough memory for new process");
+	numPages = 0;
+	delete executable;
+	addrMutex->V();
+    }
 
-    ASSERT(numPages <= NumPhysPages);		// check we're not trying
-						// to run anything too big --
-						// at least until we have
-						// virtual memory
-
-    addrMutex->P();     // Truy xuat doc quyen gPhysPageBitMAp
-    // Kiem tra xem voi so trang ct can, co con du bo nho vat ly trong khong
-    if (numPages > gPhysPageBitMap->NumClear())
-	  {
-		  printf("\nAddrSpace:Load: not enough memory for new process..!");
-		  numPages = 0;
-		  delete executable;
-		  addrMutex->V();
-      return;
-	  }
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n",
+    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
 					numPages, size);
-// first, set up the translation
-  /*  pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++) {
+// first, set up the translation 
+    pageTable = new TranslationEntry[numPages];
+    for (i = 0; i < numPages; i++)
+    {
 	pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	pageTable[i].physicalPage = i;
+	
+	pageTable[i].physicalPage = gPhysPageBitMap->Find();
+
 	pageTable[i].valid = TRUE;
 	pageTable[i].use = FALSE;
 	pageTable[i].dirty = FALSE;
-	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on
-					// a separate page, we could set its
+	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
+					// a separate page, we could set its 
 					// pages to be read-only
     }
 
-// zero out the entire address space, to zero the unitialized data segment
-// and the stack segment
-    bzero(machine->mainMemory, size);  */
-    // first, set up the translation
-	pageTable = new TranslationEntry[numPages];
-	for (i = 0; i < numPages; i++)
-	{
-		pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
-		pageTable[i].physicalPage = gPhysPageBitMap->Find();  // Tim trang con trong
-		pageTable[i].valid = TRUE;
-		pageTable[i].use = FALSE;
-		pageTable[i].dirty = FALSE;
-		pageTable[i].readOnly = FALSE; // if the code segment was entirely on a separate page, we could set its pages to be read-only
+    addrMutex->V();
 
-		// Xoa trang da chon duoc
-		bzero(&(machine->mainMemory[pageTable[i].physicalPage*PageSize]), PageSize);
-		printf("Trang vat ly %d \n",pageTable[i].physicalPage);
-	}
-  addrMutex->V();
-/*// then, copy in the code and data segments into memory
-    if (noffH.code.size > 0) {
-        DEBUG('a', "Initializing code segment, at 0x%x, size %d\n",
-			noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]),
-			noffH.code.size, noffH.code.inFileAddr);
+// then, copy in the code and data segments into memory
+    if (noffH.code.size > 0)
+    {
+	      for(i = 0; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize,noffH.code.inFileAddr + (i*PageSize));
     }
-    if (noffH.initData.size > 0) {
-        DEBUG('a', "Initializing data segment, at 0x%x, size %d\n",
-			noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]),
-			noffH.initData.size, noffH.initData.inFileAddr);
-    }
-    */
-    //Tinh so trang cua phan code
-	iNumCodePage = divRoundUp(noffH.code.size, PageSize);
 
-    // Tinh kich thuoc trang cuoi cua phan code
-	iLastCodePageSize = noffH.code.size - (iNumCodePage-1)*PageSize;
-    // Tinh phan con lai cua phan data de phong truong hop trang cuoi phan code khong su dung het page
-	iRemainDataSize = noffH.initData.size - (PageSize - iLastCodePageSize);
-  // Tinh kich thuoc trang dau phan data de co the load vua du vao phan du cua trang code cuoi
-	if (iRemainDataSize < 0)
-	{
-		iNumDataPage = 0;
-		iFirstDataPageSize = noffH.initData.size;
-	}
-	else
-	{
-		iNumDataPage = divRoundUp(iRemainDataSize, PageSize);
-		iLastDataPageSize = iRemainDataSize - (iNumDataPage-1)*PageSize;
-		iFirstDataPageSize = PageSize - iLastCodePageSize;
-	}
-// Copy phan code vao memory
-	for (i = 0; i < iNumCodePage; i++)
-	{
-		executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + pageTable[i].physicalPage*PageSize, i < (iNumCodePage-1) ? PageSize :iLastCodePageSize, noffH.code.inFileAddr + i*PageSize);
-	}
+//tuong tu nhu tren cho phan nap du lieu
+    if (noffH.initData.size > 0)
+    {
+	      for(i = 0 ; i < numPages ; i++)
+	        executable->ReadAt(&(machine->mainMemory[noffH.initData.virtualAddr]) + (pageTable[i].physicalPage*PageSize),PageSize, noffH.initData.inFileAddr+(i*PageSize));
+    }	
 
-  // Xet coi phan code o trang cuoi co day ko, neu khong load trang dau cua phan data vao lap
-  // day phan nay
-	if (iLastCodePageSize < PageSize)
-	{
-		// Copy phan data vao phan con lai cua trang cuoi phan code
-		if (iFirstDataPageSize > 0)
-			executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr])+(pageTable[i-1].physicalPage*PageSize + iLastCodePageSize), iFirstDataPageSize, noffH.initData.inFileAddr);
-	}
-
-// Copy phan con lai cua data vao cac trang sau
-	for (j = 0; j < iNumDataPage; j++)
-	{
-		// if(noffH.initData.size > 0)
-		executable->ReadAt(&(machine->mainMemory[noffH.code.virtualAddr]) + pageTable[i].physicalPage*PageSize,j < (iNumDataPage-1) ? PageSize : iLastDataPageSize,noffH.initData.inFileAddr + j*PageSize + iFirstDataPageSize);
-		i++;
-	}
-	delete executable;
+   delete executable;
 }
 
 //----------------------------------------------------------------------
@@ -334,11 +217,12 @@ AddrSpace::AddrSpace(char *filename)
 
 AddrSpace::~AddrSpace()
 {
-	for(unsigned int i = 0;i < numPages;i++)
-  {
+	int i;
+	
+	for(i = 0; i < numPages ; i++)
 		gPhysPageBitMap->Clear(pageTable[i].physicalPage);
-  }
-   delete pageTable;
+
+	delete pageTable;
 }
 
 //----------------------------------------------------------------------

@@ -19,6 +19,7 @@
 #include "ptable.h"
 #include "stable.h"
 
+
 // Initialization and cleanup routines
 extern void Initialize(int argc, char **argv); 	// Initialization,
 						// called before anything else
@@ -32,12 +33,13 @@ extern Interrupt *interrupt;			// interrupt status
 extern Statistics *stats;			// performance metrics
 extern Timer *timer;				// the hardware alarm clock
 
-// Them cac bien su dung
+// Them cac bien su dung ..
 extern SynchConsole *gSynchConsole;
 extern PTable *pTab;
 extern BitMap* gPhysPageBitMap;
 extern Semaphore* addrMutex;
 extern STable* sem;
+
 #ifdef USER_PROGRAM
 #include "machine.h"
 extern Machine* machine;	// user program memory and registers

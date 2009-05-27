@@ -20,3 +20,8 @@ Hotga : Them con tro pTab thuoc lop PTable
  * Luu y: dung doi chieu AddrSpace cua tui voi code mau, vi tui ko co viet theo no
 	 No viet sai !!! Rang hieu phan nay nha ba con. Co chu thich day du rui.
 luc: bo sung them mot hai sc_
+Hotga: Sua lai constructor cau AddrSpace
+	Them lop CCin, CCout, CROFile,CRWFile, sua lai CFileTable
+	sua lop Ptable cui bap cua thay cho
+	Da them day du cac sc : sc_create, sc_write, sc_signal, sc_exec, sc_exit, sc_join, sc_wait
+	Da test sc_create, write, read, open, close : OK.

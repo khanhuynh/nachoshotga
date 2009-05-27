@@ -85,9 +85,7 @@ int PTable::ExecUpdate(char* filename)
   
 
   // Find free slot on ptable
-  bmsem->P();
   int pid = this->GetFreeSlot();    // Tim slot trong
-  bmsem->V();
 
   if (pid == -1){// no empty slot
     printf("\nPTableError:: No empty slot.");
@@ -131,12 +129,10 @@ int PTable::ExitUpdate(int exitcode)
   // printf("\nPTable:ExitUpdate exit process id %d",pid);
   pcb[pid]->SetExitCode(exitcode);
 
-  printf("\nPtable: wait for %d proceses exit",pcb[pid]->GetNumWait());
-  while(pcb[pid]->GetNumWait()>0){
-    pcb[pid]->JoinRelease();
-    pcb[pid]->ExitWait();
-    pcb[pid]->DecNumWait();
-  }
+	pcb[pid]->JoinRelease();
+
+	pcb[pid]->ExitWait();
+  pcb[pcb[pid]->parentID]->DecNumWait();
 
   
   Remove(pid);
@@ -175,9 +171,7 @@ int PTable::JoinUpdate(int pid)
   //debug
   //printf("\nBegin Join p%d",pid);
 
-  bmsem->P();
   pcb[pid]->IncNumWait();
-  bmsem->V();
 
   //printf("\n2");
 
@@ -187,9 +181,7 @@ int PTable::JoinUpdate(int pid)
 
   int exitcode = pcb[pid]->GetExitCode();
 
-  bmsem->P();
   pcb[pid]->ExitRelease();
-  bmsem->V();
 
   //printf("\nF ExitRelease");
   interrupt->SetLevel(oldLevel);

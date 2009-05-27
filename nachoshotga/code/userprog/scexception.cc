@@ -1,5 +1,3 @@
-// Syscall exception file: process all syscall exception except SC_Halt
-
 
 #include "scexception.h"
 
@@ -94,10 +92,10 @@ int doSC_Open()
 {
   int iVirtAddr = machine->ReadRegister(4);
   int iType = machine->ReadRegister(5);
-
   if(iType < 0 || iType > 1)
   {
     printf("\nUnknow file type %d", iType);
+    machine->WriteRegister(2, -1);
     return -1;
   }
 
@@ -106,6 +104,7 @@ int doSC_Open()
   if(fID < 0)
   {
     printf("No free slot\n");
+    machine->WriteRegister(2, -1);
     return -1;
   }
 
@@ -123,7 +122,7 @@ int doSC_Open()
 
   if(f == NULL)
   {
-    printf("Cannot open file %s", FileName);
+    printf("\nCannot open file %s", FileName);
     machine->WriteRegister(2, -1);
     delete FileName;
     return -1;
@@ -137,47 +136,102 @@ int doSC_Open()
 
 int doSC_Read()
 {
-	int virtAddr = machine->ReadRegister(4);
+	int iVirAddr = machine->ReadRegister(4);
 
-  int size = machine->ReadRegister(5);
+  int iSize = machine->ReadRegister(5);
   int id = machine->ReadRegister(6);
-char* name = User2System(virtAddr,size);
   
-  if (size <= 0)
+  if (iSize <= 0)
     {
-      printf("\nError: unexpected buffer size: %d",size);
+      printf("\nError: unexpected buffer size: %d",iSize);
+      machine->WriteRegister(2, -1);
       return -1;
     }
 
   if (id < 0 || id >= currentThread->fTable->GetSize())
     {
       printf("\n ReadError: Unexpected file id: %d",id);
+      machine->WriteRegister(2, -1);
       return -1;
     }
   if (!currentThread->fTable->IsExist(id)){
     printf("\n ReadError: reading file id %d is not opened",id);
+    machine->WriteRegister(2, -1);
     return -1;
   }
 
-  int rs = currentThread->fTable->fRead(virtAddr,size,id);
+  int rs = currentThread->fTable->fRead(iVirAddr,iSize,id);
   
   machine->WriteRegister(2,rs);
 
   return rs;
 }
 
+
+int doSC_Write()
+{
+  int iVirAddr = machine->ReadRegister(4);
+  int iSize = machine->ReadRegister(5);
+  int id = machine->ReadRegister(6);
+
+  if (iSize < 0)
+    {
+      printf("\nSC_Write: Loi size < 0: %d",iSize);
+      machine->WriteRegister(2, -1);
+      return -1;
+    }
+  else if (iSize == 0)
+  {
+    machine->WriteRegister(2, 0);
+    return 0;
+  }
+
+  if (id < 0 || id >= currentThread->fTable->GetSize())
+    {
+      printf("\n WriteError: Ko xac dinh duoc id: %d",id);
+      machine->WriteRegister(2, -1);
+      return -1;
+    }
+  if (!currentThread->fTable->IsExist(id)){
+    printf("\n WriteError: file id %d chua mo",id);
+    machine->WriteRegister(2, -1);
+    return -1;
+  }
+
+  int rs = currentThread->fTable->fWrite(iVirAddr,iSize,id);
+
+  machine->WriteRegister(2,rs);
+
+  return rs;
+}
+
+
+int doSC_Close()
+{
+  int id = machine->ReadRegister(4);
+  if (id < 0 || id >= currentThread->fTable->GetSize())
+    {
+      printf("\n Close: Khong xac dinh duoc id: %d",id);
+      machine->WriteRegister(2, -1);
+      return -1;
+    }
+  if (!currentThread->fTable->IsExist(id)){
+    printf("\n Close: File id %d chua duoc mo",id);
+    machine->WriteRegister(2, -1);
+    return -1;
+  }
+
+  currentThread->fTable->fClose(id);
+  machine->WriteRegister(2, 0);
+  return 0;
+}
+
 int doSC_Create()
 {
 	int virtAddr;
-  	char* filename;
+  char* filename;
 
-    
-  DEBUG(dbgFile,"\n SC_Create call ...");
-  DEBUG(dbgFile,"\n Doc tap tin tu dia chi ao");
-  
-  // check for exception
   virtAddr = machine->ReadRegister(4);
-  DEBUG (dbgFile,"\n Dang doc file.");
   filename = User2System(virtAddr,MaxFileLength+1);
   if (filename == NULL)
     {
@@ -187,7 +241,7 @@ int doSC_Create()
       delete filename;
       return -1;
     }
-  
+
   if (strlen(filename) == 0 || (strlen(filename) >= MaxFileLength+1))
     {
       printf("\n Qua nhieu ki tu trong ten tap tin: %s",filename);
@@ -198,9 +252,9 @@ int doSC_Create()
     }
 
   //Hoan thanh viec doc ten tap tin
-  
+
   DEBUG(dbgFile,"\n Doc ten tap xong!.");
-  
+
 
   // Tao tap tin voi cai size = 0;
 
@@ -212,7 +266,7 @@ int doSC_Create()
       delete filename;
       return -1;
     }
- 
+
 
   machine->WriteRegister(2,0);
 
@@ -220,23 +274,140 @@ int doSC_Create()
   return 0;
 }
 
-void doSC_Semaphore()
+int doSC_CreateSemaphore()
 {
 	int iAddr = machine->ReadRegister(4);
 	int iSemval = machine->ReadRegister(5);
 	char *name = User2System(iAddr,32);
 	if(name == NULL)
 	{
-		printf("\nSC_Semaphore :: name = NULL");
+		printf("\nSC_Semaphore :: Name = NULL");
 		machine->WriteRegister(2,-1);
-		return;
+		return -1;
 	}
 	int kq = sem->create(name,iSemval);
 	if(kq < 0)
 	{
-		printf("\nSC_Semaphore :: khong the tao semaphore : %s",name);
+		printf("\nSC_Semaphore :: Khong the tao semaphore : %s",name);
 		machine->WriteRegister(2,-1);
-		return;
+		return -1;
 	}
 	machine->WriteRegister(2,0);
+  return 0;
+}
+
+/*
+ Thuc thi 1 chuong trinh moi trong system thread
+input :   ten cua file chuong trinh
+output :    loi   -1 
+          thanh cong : SpaceID 
+*/
+int doSC_Exec()
+{
+	int iAddr = machine->ReadRegister(4);
+	char* fName = User2System(iAddr,MaxFileLength+1);
+	
+	int ID = pTab->ExecUpdate(fName); //tra ve id cua tien trinh con hoac -1 neu loi
+
+	machine->WriteRegister(2,ID);
+	return ID;
+}
+
+/*
+------------------------------------------------------------
+  Join vao tien trinh cha co id la pID
+input : id cua tien trinh cha
+
+output : 0 neu thanh cong
+          
+------------------------------------------------------------
+*/
+int doSC_Join()
+{
+	int pID = machine->ReadRegister(4);
+
+	int iExitcode = pTab->JoinUpdate(pID);
+
+	machine->WriteRegister(2,iExitcode);
+
+  return iExitcode;
+
+}
+
+/*
+------------------------------------------------------------
+void Exit(int exitCode)
+intput : exitcode = 0 : chuong trinh hoan thanh thanh cong
+		 exitcode != 0 : nguoc lai
+------------------------------------------------------------
+*/
+int doSC_Exit()
+{
+  	int iExitStat = machine->ReadRegister(4);
+ 
+  	// neu tien trinh thoat ra vi loi
+	if (iExitStat != 0)
+  {
+    		printf("\nTien trinh %s thoat bi loi : %d",currentThread->getName(),iExitStat);
+        return -1;
+      }
+
+	int iRs = pTab->ExitUpdate(iExitStat);
+  // giai phong tai nguyen
+	currentThread->FreeSpace();
+	currentThread->Finish();
+  return iRs;
+}
+
+/*
+  -----------------------------------------------------
+  Doi
+input :  ten cua semaphore can wait
+output : 0 : thanh cong
+	        -1 : loi
+  -----------------------------------------------------
+*/
+
+int doSC_Wait()
+{
+	int iAddr = machine->ReadRegister(4);
+	char *Name = User2System(iAddr,32);
+	if(Name == NULL)
+	{
+		printf("\nSC_Wait :: name = NULL");
+		machine->WriteRegister(2,-1);
+		return -1;
+	}
+	int iRs = sem->wait(Name);
+	if(iRs < 0)
+	{
+		printf("\nSC_Wait :: Can't wait semaphore : %s",Name);
+		machine->WriteRegister(2,-1);
+		return -1;
+	}
+	machine->WriteRegister(2,0);
+  return 0;
+}
+
+
+int doSC_Signal()
+{
+	int iVirAddr = machine->ReadRegister(4);
+	char *Name = User2System(iVirAddr,32);
+  
+	if(Name == NULL)
+	{
+		printf("\nSC_Signal :: Ten NULL");
+		machine->WriteRegister(2,-1);
+		return -1;
+	}
+	int iRs = sem->signal(Name);
+	if(iRs != 0)
+	{
+		printf("\nSC_Signal :: Ko the signal : %s",Name);
+		machine->WriteRegister(2,-1);
+		return -1;
+	}
+	machine->WriteRegister(2,0);
+  return 0;
 }

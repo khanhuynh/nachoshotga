@@ -29,7 +29,10 @@
 #define SC_Close	8
 #define SC_Fork		9
 #define SC_Yield	10
-#define SC_Semaphore	11
+#define SC_CreateSemaphore 11
+#define SC_Wait 12
+#define SC_Signal 13
+
 #ifndef IN_ASM
 
 /* The system call interface.  These are the operations the Nachos
@@ -86,14 +89,16 @@ typedef int OpenFileId;
 #define ConsoleInput	0  
 #define ConsoleOutput	1
 #define MaxFileLength 32
+#define RW 0
+#define RO 1
  
 /* Create a Nachos file, with "name" */
-void Create(char *name);
+int Create(char *FileName);
 
 /* Open the Nachos file "name", and return an "OpenFileId" that can 
  * be used to read and write to the file.
  */
-OpenFileId Open(char *name);
+OpenFileId Open(char *name,int iType);
 
 /* Write "size" bytes from "buffer" to the open file. */
 void Write(char *buffer, int size, OpenFileId id);
@@ -123,7 +128,13 @@ void Fork(void (*func)());
 /* Yield the CPU to another runnable thread, whether in this address space 
  * or not. 
  */
-void Yield();		
+void Yield();
+
+int CreateSemaphore(char* Name,int semVal);
+
+int Wait(char* Name);
+
+int Signal(char* Name);
 
 #endif /* IN_ASM */
 

@@ -161,6 +161,7 @@ Initialize(int argc, char **argv)
     pTab = new PTable(10);
     gPhysPageBitMap = new BitMap(256);
     addrMutex = new Semaphore("AddrMutex",1);
+    sem = new STable();
 #endif
 
 #ifdef FILESYS

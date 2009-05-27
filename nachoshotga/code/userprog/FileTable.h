@@ -3,17 +3,24 @@
 #define FILETABLE_H
 
 #include "bitmap.h"
-#include "File.h"
+#include "iobase.h"
+#include "rofile.h"
+#include "rwfile.h"
+#include "cin.h"
+#include "cout.h"
 
+#define CIN 0
+#define COUT 1
 
-
-#define MAX 10   // So file quan ly
-
+#define MAX 10   // So doi tuong quan ly
+#define  RW 0
+#define  RO 1
 
 
 class CFileTable
 {
  public:
+  CFileTable();
   CFileTable(int size);
   ~CFileTable();
 
@@ -27,7 +34,7 @@ class CFileTable
  private:
   int m_iSize;
   BitMap *m_bm;
-  CFile *m_pFile[MAX];
+  CIOBase *m_pIO[MAX];
 };
 
 #endif
