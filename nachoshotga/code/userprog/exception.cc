@@ -152,6 +152,11 @@ ExceptionHandler(ExceptionType which)
         doSC_Signal();
         break;
       } 
+      case SC_Join:
+      {
+	doSC_Join();
+	break;
+      }
 		  default:
 			  printf("Unexpected user mode exception %d %d\n", which, type);
 			  ASSERT(FALSE);
