@@ -18,8 +18,8 @@ main()
 
 	i = 0;
 	
-	do {
-	
+	do
+  {
 	    Read(&buffer[i], 1, input); 
 
 	} while( buffer[i++] != '\n' );

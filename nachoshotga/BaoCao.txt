@@ -25,3 +25,4 @@ Hotga: Sua lai constructor cau AddrSpace
 	sua lop Ptable cui bap cua thay cho
 	Da them day du cac sc : sc_create, sc_write, sc_signal, sc_exec, sc_exit, sc_join, sc_wait
 	Da test sc_create, write, read, open, close : OK.
+Hotga: Them chuong trinh shell : demoSC 
