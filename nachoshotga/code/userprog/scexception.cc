@@ -134,6 +134,13 @@ int doSC_Open()
   return iFileID;
 }
 
+
+/*
+Input: User space address = reg4, buffer size = reg5, OpenfileID = reg6
+Output: -1: loi
+Purpose: doc tu file hay console
+*/
+
 int doSC_Read()
 {
 	int iVirAddr = machine->ReadRegister(4);
@@ -167,6 +174,12 @@ int doSC_Read()
   return rs;
 }
 
+/*
+Input: User space address = reg4, buffer size= reg5, OpenFileID = reg6
+Output: = -1 - loi hay so bytes da duoc viet
+        
+Purpose: do write to file or console
+*/
 
 int doSC_Write()
 {
@@ -206,6 +219,12 @@ int doSC_Write()
 }
 
 
+/*
+Input: OpenfileID = reg4
+Output: 0- thanh cong , -1 - that bai
+Purpose: dong file
+*/
+
 int doSC_Close()
 {
   int id = machine->ReadRegister(4);
@@ -225,6 +244,12 @@ int doSC_Close()
   machine->WriteRegister(2, 0);
   return 0;
 }
+
+/*
+Input: reg4 - ten file
+Output:
+Purpose: su ly su kien SC_Create khi System goi   
+*/
 
 int doSC_Create()
 {
@@ -274,6 +299,13 @@ int doSC_Create()
   return 0;
 }
 
+/*
+input : name : ten cua bien semaphore
+	iSemval: gia tri ban dau 
+output : 0 : thanh cong
+	 -1 : loi
+		+ name = NULL
+*/
 int doSC_CreateSemaphore()
 {
 	int iAddr = machine->ReadRegister(4);
@@ -390,6 +422,14 @@ int doSC_Wait()
 }
 
 
+/*
+  -----------------------------------------------------
+int signal(char* name)
+input : name : ten cua semaphore can signal
+output : 0 : thanh cong
+	-1 : loi
+  -----------------------------------------------------
+*/
 int doSC_Signal()
 {
 	int iVirAddr = machine->ReadRegister(4);

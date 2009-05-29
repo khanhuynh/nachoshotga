@@ -1,7 +1,8 @@
 #include "ptable.h"
 #include "system.h"
 
-
+//khoi tao size doi tuong pcb de luu size process. Gán giá tri ban dau là null.
+//khoi tao bm va bmsem de su dung
 PTable::PTable(int size){
   
   if (size > MAXPROCESS)
@@ -20,6 +21,7 @@ PTable::PTable(int size){
   bmsem = new Semaphore("bitmapAccess",1);
 }
 
+//huy cac doi tuong da tao
 PTable::~PTable()
 {
   for (int i =0 ; i < psize; i++)
@@ -35,6 +37,7 @@ PTable::~PTable()
   delete bmsem;
 }
 
+// return PID
 int PTable::ExecUpdate(char* filename)
 {
   // Read process name
@@ -192,6 +195,7 @@ int PTable::JoinUpdate(int pid)
   return (exitcode);
 }
 
+//tim free slot de luu thong tin cho tien trinh moi
 int PTable::GetFreeSlot(){
   bmsem->P();
   return (bm->Find());
@@ -203,12 +207,14 @@ int PTable::GetMax()
   return psize;
 }
 
+//kiem tra ton tai pID nay hay ko?
 bool PTable::IsExist(int pid){
  // if (pid < 0 || pid > bm->Size())
  //  return false;
   return bm->Test(pid);
 }
 
+//khi tien trinh ket thuc , xoa 1 processID ra khoi mang quan ly no
 void PTable::Remove(int pid){
   //  printf("\nR0");
   bmsem->P();

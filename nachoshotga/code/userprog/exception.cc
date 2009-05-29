@@ -104,52 +104,52 @@ ExceptionHandler(ExceptionType which)
    			interrupt->Halt();
       case SC_Create:
       {
-        doSC_Create();
+        doSC_Create();//su ly su kien SC_Create khi System goi 
         break;
       }
       case SC_Open:
       {
-        doSC_Open();
+        doSC_Open();// mo file
         break;
       }   
       case SC_Read:
       {
-        doSC_Read();
+        doSC_Read();//doc tu file hay console
         break;
       }
       case SC_Write:
       {
-        doSC_Write();
+        doSC_Write();//write to file or console
         break;
       }
       case SC_Close:
       {
-        doSC_Close();
+        doSC_Close();//dong file
         break;
       }
       case SC_CreateSemaphore:
       {
-			  doSC_CreateSemaphore();
+			  doSC_CreateSemaphore();// tao semaphore
 			  break;
       }
       case SC_Exec:
       {
-        doSC_Exec();
+        doSC_Exec();//Thuc thi 1 chuong trinh moi trong system thread
         break;
       }
       case SC_Exit:
       {
-        doSC_Exit();
+        doSC_Exit();//kiem tra chuong trinh co hoan thanh hay ko ( = 0 la hoan thanh va nguoc lai)
         break;
       }
       case SC_Wait:
       {
-        doSC_Wait();
+        doSC_Wait();//semaphore wait
         break;
       }
       case SC_Signal:
       {
-        doSC_Signal();
+        doSC_Signal();//semaphore can signal
         break;
       } 
       case SC_Join:
@@ -162,7 +162,7 @@ ExceptionHandler(ExceptionType which)
 			  ASSERT(FALSE);
         interrupt->Halt();
 		  }
-      IncreaseProgramCounter();
+      IncreaseProgramCounter();// Ham tang thanh ghi PC
 		break;
 	}
 }
