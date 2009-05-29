@@ -3,6 +3,11 @@
 
 int main()
 {
+  Write("\n Chuong trinh \"demoExec\" ",30,ConsoleOutput);
+  Write("\n Chuong trinh \"demoExec\" ",30,ConsoleOutput);
+  Write("\n Chuong trinh \"demoExec\" ",30,ConsoleOutput);
+  Write("\n Chuong trinh \"demoExec\" ",30,ConsoleOutput);
+  Write("\n Chuong trinh \"demoExec\" ",30,ConsoleOutput);
   Write("\n Chuong trinh \"demoExec\" ",30,ConsoleOutput);    
-  return 0;
+  Exit(0);
 } 

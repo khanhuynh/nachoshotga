@@ -11,7 +11,7 @@ PTable::PTable(int size){
   bm = new BitMap(size );
   ASSERT(bm != NULL);
 
-  //do not use index 0
+  //ko su dung 0 vi dday la cha cua tat ca
   bm->Mark(0);
 
   psize = size;
@@ -37,13 +37,8 @@ PTable::~PTable()
   delete bmsem;
 }
 
-// return PID
 int PTable::ExecUpdate(char* filename)
 {
-  // Read process name
-  //int virtAddr = machine->ReadRegister(4);
-
-  //char *filename = User2System(virtAddr,MaxFileLength+1);
 
   if (filename == NULL)
     {
@@ -53,10 +48,8 @@ int PTable::ExecUpdate(char* filename)
       return -1;
     }
 
-  //debug
-  //  printf("\nPtable:exec process : %s",filename);
 
-  //Check name too long!
+  //Kiem tra ten dai
   if (strlen(filename) == 0 || (strlen(filename) >= MaxFileLength+1))
     {
       printf("\n Too many characters in filename: %s",filename);
@@ -65,7 +58,7 @@ int PTable::ExecUpdate(char* filename)
       return -1;
     }
 
-  //Check filename exist
+  //Kiem tra coi file co ton tai ko
   OpenFile* executable = fileSystem->Open(filename);
 
   if (executable == NULL){
@@ -77,9 +70,8 @@ int PTable::ExecUpdate(char* filename)
 
   delete executable;
 
-  //Check if call itself
-  //  printf("\n current pro '%s'",currentThread->getName());
   
+  // Ko cho phep no gio chinh no
   if (strcmp(currentThread->getName(),filename) == 0){
     printf("\nPTable:Error do NOT support a process execute itself");
     delete filename;
@@ -87,7 +79,6 @@ int PTable::ExecUpdate(char* filename)
   }
   
 
-  // Find free slot on ptable
   int pid = this->GetFreeSlot();    // Tim slot trong
 
   if (pid == -1){// no empty slot
@@ -95,17 +86,16 @@ int PTable::ExecUpdate(char* filename)
     return -1;
   }
 
-  // Allocate new pcb
+  // cap phat 1 block moi
   pcb[pid] = new PCB(pid);
   pcb[pid]->parentID = currentThread->processID;
-  //debug
-  //printf("\nPtable: process ID: %d",pid);
+
 
   int rs = pcb[pid]->Exec(filename,pid);
   
   //  delete filename;
-
-  if (rs == -1)// error
+  //printf("\nPTable:ExecUpdate numwait %d",pcb[pid]->GetNumWait());
+  if (rs == -1)// loi
     pid = -1;
 
   return pid;
@@ -114,33 +104,40 @@ int PTable::ExecUpdate(char* filename)
 
 int PTable::ExitUpdate(int exitcode)
 {
-  // get process ID
+   
+  
   int pid = currentThread->processID;
-  // check it exist
+
+  // kiem tra ton tai
   if(!IsExist(pid)){
     printf("\nPTable::ExitUpdate unexpected process id %d",pid);
     return -1;
   }
 
   //
-  if(pid == 0)// the very parent process.
-  {
+  if(pid == 0)// neu la tien trinh chinh (cho cua tat ca
+  {  
     interrupt->Halt();
     return 0;
   }
 
-  // printf("\nPTable:ExitUpdate exit process id %d",pid);
-  pcb[pid]->SetExitCode(exitcode);
+   
+   
+   pcb[pid]->SetExitCode(exitcode);
+   // Neu co tien trinh cha doi no
+  if(pcb[pid]->GetNumWait() > 0)
+  { 
+    //printf("\nPTable:Chui vao");
+	  pcb[pid]->JoinRelease();       // releasse cho tien trinh cha
 
-	pcb[pid]->JoinRelease();
+	  pcb[pid]->ExitWait();           // Xin phep thoat
+    pcb[pid]->DecNumWait();
+  } 
 
-	pcb[pid]->ExitWait();
-  pcb[pcb[pid]->parentID]->DecNumWait();
+   //printf("\nPTable:ExitUpdate exit process id %d",pid);
+  Remove(pid);         // Xoa khoi pcb
 
-  
-  Remove(pid);
-
-  printf("\nPTable:ExitUpdate exit process id %d",pid);
+ 
 
   return 0;
 }
@@ -158,8 +155,7 @@ int PTable::JoinUpdate(int pid)
     return -1;
   }
 
-//  gmutex->P();    Cai nay la cai gi ????
-  //
+
   if(pcb[pid] == NULL){//not enough main memory 
     interrupt->SetLevel(oldLevel);
     return -1;
@@ -171,30 +167,21 @@ int PTable::JoinUpdate(int pid)
     return -1;
   }
   
-  //debug
-  //printf("\nBegin Join p%d",pid);
 
   pcb[pid]->IncNumWait();
 
-  //printf("\n2");
-
   pcb[pid]->JoinWait();
-
-  //printf("\n3");
 
   int exitcode = pcb[pid]->GetExitCode();
 
   pcb[pid]->ExitRelease();
 
-  //printf("\nF ExitRelease");
-  interrupt->SetLevel(oldLevel);
 
-  //debug
-  //printf("\nFinish Join p%d",pid);
+  interrupt->SetLevel(oldLevel);
+  // Tra ve trang thai ban dau
 
   return (exitcode);
 }
-
 //tim free slot de luu thong tin cho tien trinh moi
 int PTable::GetFreeSlot(){
   bmsem->P();
@@ -207,10 +194,9 @@ int PTable::GetMax()
   return psize;
 }
 
-//kiem tra ton tai pID nay hay ko?
+// Kt xem id co ton tai?
 bool PTable::IsExist(int pid){
- // if (pid < 0 || pid > bm->Size())
- //  return false;
+
   return bm->Test(pid);
 }
 

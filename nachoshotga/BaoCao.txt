@@ -27,3 +27,4 @@ Hotga: Sua lai constructor cau AddrSpace
 	Da test sc_create, write, read, open, close : OK.
 Hotga: Them chuong trinh shell : demoSC 
 luc : moi phu de cho exception.cc , scexception .cc va .h , ptable.cc .va ptable.h,
+Hotga: Them mot so thu linh tinh

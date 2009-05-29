@@ -189,6 +189,7 @@ AddrSpace::AddrSpace(char* filename)
 	pageTable[i].readOnly = FALSE;  // if the code segment was entirely on 
 					// a separate page, we could set its 
 					// pages to be read-only
+ printf("\nPhys page : %d", pageTable[i].physicalPage);
     }
 
     addrMutex->V();

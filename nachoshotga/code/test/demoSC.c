@@ -23,29 +23,33 @@ int main()
 	 iR = Read(fileName,MaxFileLength,ConsoleInput);
 	 if(iR < 0)
 	 {
-		Write("\nLoi ! ",10,ConsoleOutput);
-		Exit(0);
+		Write("\nLoi ! ",10,ConsoleOutput);		
 	 }
+   else
+   {
+     
+	    id = Open(fileName,RO);
 
-	 id = Open(fileName,RO);
-
-	 if(id < 0)
-	 {
-		Write("\nTen file nay ko co ",50,ConsoleOutput);
-		Exit(0);
-	 }
-
-	 Write("\nNoi dung cua file ",50,ConsoleOutput);
-	 Write(fileName ,30,ConsoleOutput);
-	 Write(" la :",10,ConsoleOutput);
-	 while(iR > 0)
-	 {
-		iR  = Read(buff,10,id);//doc tu file
-    if(iR < 10)
-      break;
-		Write(buff,10,ConsoleOutput);//xuat ra man hinh
-   }
-   Close(id);
+	    if(id < 0)
+	    {
+		    Write("\nTen file nay ko co ",50,ConsoleOutput);
+		
+	    }
+      else
+      {
+	      Write("\nNoi dung cua file ",50,ConsoleOutput);
+	      Write(fileName ,30,ConsoleOutput);
+	      Write(" la :",10,ConsoleOutput);
+	      while(iR > 0)
+	      {
+		      iR  = Read(buff,10,id);//doc tu file
+          if(iR < 10)
+            break;
+		      Write(buff,10,ConsoleOutput);//xuat ra man hinh
+        }
+        Close(id);
+      }
+   } 
      
   Write("\n3. SC_Exec",20,ConsoleOutput);
   Write("\nBan hay nhap ten file muon exec :",40,ConsoleOutput);
@@ -55,9 +59,10 @@ int main()
 		Write("\nLoi ! ",50,ConsoleOutput);
 		Exit(0);
 	 }
-  Exec(fileName);
+  id = Exec(fileName);
+  Join(id);
 
-  Read(iR,1,ConsoleInput);
+
   Write("\n Het !",10,ConsoleOutput);
   Exit(0);  
     return 1;

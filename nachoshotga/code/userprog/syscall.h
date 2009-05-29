@@ -136,6 +136,8 @@ int Wait(char* Name);
 
 int Signal(char* Name);
 
+
+
 #endif /* IN_ASM */
 
 #endif /* SYSCALL_H */

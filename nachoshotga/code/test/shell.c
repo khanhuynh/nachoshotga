@@ -3,33 +3,66 @@
 int
 main()
 {
-    SpaceId newProc;
-    OpenFileId input = ConsoleInput;
-    OpenFileId output = ConsoleOutput;
-    char prompt[2], ch, buffer[60];
-    int i;
+  char fileName[30];
+	char buff[100];
+	OpenFileId id;
+  int iR;
+  char fileCreate[30];
+  Write("\nChuong trinh demo system call : ",32,ConsoleOutput);
+  Write("SC_Create, SC_Open, SC_Read, SC_Write, SC_Close, SC_Exec, SC_Exit \n",80,ConsoleOutput);
 
-    prompt[0] = '-';
-    prompt[1] = '-';
 
-    while( 1 )
-    {
-	Write(prompt, 2, output);
+  Write("\n1. SC_Create ",20,ConsoleOutput);
+  Write("Nhap vao ten file :\n",30,ConsoleOutput);
+  Read(fileCreate,MaxFileLength,ConsoleInput);
+  Create(fileCreate);
 
-	i = 0;
-	
-	do
-  {
-	    Read(&buffer[i], 1, input); 
+  Write("\n2. SC_Open, SC_Read, SC_Write, SC_Close ",40,ConsoleOutput);
+  Write("\nBan hay nhap ten file :",30,ConsoleOutput);
+	 iR = Read(fileName,MaxFileLength,ConsoleInput);
+	 if(iR < 0)
+	 {
+		Write("\nLoi ! ",10,ConsoleOutput);
+	 }
+   else
+   {
 
-	} while( buffer[i++] != '\n' );
+	    id = Open(fileName,RO);
 
-	buffer[--i] = '\0';
+	    if(id < 0)
+	    {
+		    Write("\nTen file nay ko co ",50,ConsoleOutput);
 
-	if( i > 0 ) {
-		newProc = Exec(buffer);
-		Join(newProc);
-	}
-    }
+	    }
+      else
+      {
+	      Write("\nNoi dung cua file ",50,ConsoleOutput);
+	      Write(fileName ,30,ConsoleOutput);
+	      Write(" la :",10,ConsoleOutput);
+	      while(iR > 0)
+	      {
+		      iR  = Read(buff,10,id);//doc tu file
+          if(iR < 10)
+            break;
+		      Write(buff,10,ConsoleOutput);//xuat ra man hinh
+        }
+        Close(id);
+      }
+   }
+
+  Write("\n3. SC_Exec",20,ConsoleOutput);
+  Write("\nBan hay nhap ten file muon exec :",40,ConsoleOutput);
+	iR = Read(fileName,MaxFileLength,ConsoleInput);
+  if(iR < 0)
+	 {
+		Write("\nLoi ! ",50,ConsoleOutput);
+		Exit(0);
+	 }
+  id = Exec(fileName);  // Goi exec
+  Join(id);             // Doi tien trinh con chay xong
+
+
+  Write("\n Het !",10,ConsoleOutput);
+  Exit(0);
 }
 
