@@ -1,0 +1,1 @@
+Xây dựng syscall, thread, đa tiến trình. Cài đăt ứng dụng minh họa bình nuớc nóng lạnh.
